@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "tech.fhyx.platform.imsto";
+option java_outer_classname = "ImageProto";
+
+package impb;
+
+
+// rpc service
+
+service ImageSvc {
+	// Fetch
+	rpc Fetch(FetchInput) returns (ImageOutput) {}
+	// Store
+	rpc Store(ImageInput) returns (ImageOutput) {}
+}
+
+message FetchInput {
+	string apiKey = 1;
+	string uri = 2;
+}
+
+message ImageInput {
+	string apiKey = 1;   // APIKey
+	bytes image = 2;     // Image Binary
+	string name = 3;     // Filename
+	int64 modified = 4;  // Last Modified
+	string roof = 5;     // section name
+	int64 userID = 6;    // user ID
+}
+
+message ImageOutput {
+	string path = 1;
+	string uri = 2;
+	uint64 ID = 3;
+}
