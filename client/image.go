@@ -86,7 +86,7 @@ func SetAddr(addr string) {
 func GetClient() pb.ImageSvcClient {
 	once.Do(func() {
 		hasTLS := trcr != nil
-		log.Printf("sso: dial to %q, TLS %v, gRPC ver %s", address, hasTLS, grpc.Version)
+		log.Printf("dial to %q, TLS %v, gRPC ver %s", address, hasTLS, grpc.Version)
 		retryOpt := grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond))
 		retryTimesOpt := grpc_retry.WithMax(maxRetries)
 		var retryOpts = []grpc_retry.CallOption{retryOpt, retryTimesOpt}
@@ -127,7 +127,18 @@ func Close() error {
 // IImage ...
 type IImage interface {
 	GetPath() string
+	GetUri() string
+	GetID() uint64
 }
+
+// FetchInput ...
+type FetchInput = pb.FetchInput
+
+// ImageInput ...
+type ImageInput = pb.ImageInput
+
+// ImageOutput ...
+type ImageOutput = pb.ImageOutput
 
 // Fetch ...
 func Fetch(ctx context.Context, apiKey, uri string) (IImage, error) {
