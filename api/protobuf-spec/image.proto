@@ -34,8 +34,20 @@ message ImageInput {
 	string sizeOp = 6;   // size op
 }
 
-message ImageOutput {
-	string path = 1;
-	string uri = 2;
-	uint64 ID = 3;
+message ImageMeta {
+	int32 width = 1;
+	int32 height = 2;
+	int32 quality = 3;
+	int32 size = 4;
+	string ext = 5;
+	string mime = 6;
 }
+
+message ImageOutput {
+	string name = 1;
+	string uri = 2;
+	string host = 3;
+	uint64 ID = 4;
+	ImageMeta meta = 5;
+}
+
