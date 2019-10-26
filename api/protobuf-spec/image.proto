@@ -17,9 +17,9 @@ service ImageSvc {
 }
 
 message FetchInput {
-	string apiKey = 1;
-	string uri = 2;      // URI
-	string referer = 3;  // referer for http request
+	string apiKey = 1;   // APIKey
+	string uri = 2;      // full URI of image
+	string referer = 3;  // special referer of request
 	string roof = 4;     // section name
 	int64 userID = 5;    // user ID
 	string sizeOp = 6;   // size op
@@ -28,11 +28,10 @@ message FetchInput {
 message ImageInput {
 	string apiKey = 1;   // APIKey
 	bytes image = 2;     // Image Binary
-	string name = 3;     // Filename
+	string name = 3;     // FileName
 	string roof = 4;     // section name
 	int64 userID = 5;    // user ID
-	int64 modified = 6;  // Last Modified
-	string sizeOp = 7;   // size op
+	string sizeOp = 6;   // size op
 }
 
 message ImageOutput {
