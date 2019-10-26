@@ -18,16 +18,19 @@ service ImageSvc {
 
 message FetchInput {
 	string apiKey = 1;
-	string uri = 2;
+	string uri = 2;      // URI
+	string referer = 3;  // referer for http request
+	string roof = 4;     // section name
+	int64 userID = 5;    // user ID
 }
 
 message ImageInput {
 	string apiKey = 1;   // APIKey
 	bytes image = 2;     // Image Binary
 	string name = 3;     // Filename
-	int64 modified = 4;  // Last Modified
-	string roof = 5;     // section name
-	int64 userID = 6;    // user ID
+	string roof = 4;     // section name
+	int64 userID = 5;    // user ID
+	int64 modified = 6;  // Last Modified
 }
 
 message ImageOutput {
