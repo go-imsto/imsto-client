@@ -126,7 +126,7 @@ func Close() error {
 
 // IImage ...
 type IImage interface {
-	GetName() string
+	GetPath() string
 	GetHost() string
 	GetUri() string
 	GetID() uint64
