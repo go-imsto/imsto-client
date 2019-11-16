@@ -1,5 +1,11 @@
 .SILENT :
-.PHONY : dist gen-rpc vet package
+.PHONY : build gen-rpc vet
+
+build: vet
+	go build -v ./...
+
+vet:
+	go vet ./...
 
 gen-rpc:
 	echo "Generating"

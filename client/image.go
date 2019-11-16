@@ -83,6 +83,7 @@ func SetAddr(addr string) {
 	address = addr
 }
 
+// GetClient ...
 func GetClient() pb.ImageSvcClient {
 	once.Do(func() {
 		hasTLS := trcr != nil
@@ -142,10 +143,11 @@ type ImageInput = pb.ImageInput
 type ImageOutput = pb.ImageOutput
 
 // Fetch ...
-func Fetch(ctx context.Context, apiKey, uri string) (IImage, error) {
+func Fetch(ctx context.Context, apiKey, roof, uri string) (IImage, error) {
 	r, err := GetClient().Fetch(ctx, &pb.FetchInput{
 		ApiKey: apiKey,
 		Uri:    uri,
+		Roof:   roof,
 	})
 	if err != nil {
 		log.Printf("call Fetch(%s, %s) ERR %s", apiKey, uri, err)
@@ -156,7 +158,7 @@ func Fetch(ctx context.Context, apiKey, uri string) (IImage, error) {
 }
 
 // Store ...
-func Store(ctx context.Context, apiKey string, rd io.Reader) (IImage, error) {
+func Store(ctx context.Context, apiKey, roof, name string, rd io.Reader) (IImage, error) {
 	data, err := ioutil.ReadAll(rd)
 	if err != nil {
 		return nil, err
@@ -164,6 +166,8 @@ func Store(ctx context.Context, apiKey string, rd io.Reader) (IImage, error) {
 	r, err := GetClient().Store(ctx, &pb.ImageInput{
 		ApiKey: apiKey,
 		Image:  data,
+		Roof:   roof,
+		Name:   name,
 	})
 	if err != nil {
 		log.Printf("call Store(%s, %d bytes) ERR %s", apiKey, len(data), err)
