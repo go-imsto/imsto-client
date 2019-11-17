@@ -155,10 +155,15 @@ func MakeURL(path, sizeOp string) string {
 
 // Fetch ...
 func Fetch(ctx context.Context, roof, uri string) (IImage, error) {
+	var uid int64
+	if u, ok := UIDFromContext(ctx); ok {
+		uid = u
+	}
 	r, err := GetClient().Fetch(ctx, &pb.FetchInput{
 		ApiKey: firstAPIKey,
 		Uri:    uri,
 		Roof:   roof,
+		UserID: uid,
 	})
 	if err != nil {
 		log.Printf("call Fetch(%s, %s) ERR %s", firstAPIKey, uri, err)
@@ -170,6 +175,10 @@ func Fetch(ctx context.Context, roof, uri string) (IImage, error) {
 
 // Store ...
 func Store(ctx context.Context, roof, name string, rd io.Reader) (IImage, error) {
+	var uid int64
+	if u, ok := UIDFromContext(ctx); ok {
+		uid = u
+	}
 	data, err := ioutil.ReadAll(rd)
 	if err != nil {
 		return nil, err
@@ -179,6 +188,7 @@ func Store(ctx context.Context, roof, name string, rd io.Reader) (IImage, error)
 		Image:  data,
 		Roof:   roof,
 		Name:   name,
+		UserID: uid,
 	})
 	if err != nil {
 		log.Printf("call Store(%s, %d bytes) ERR %s", firstAPIKey, len(data), err)
