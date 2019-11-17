@@ -23,27 +23,29 @@ import (
 
 // 环境变量
 const (
-	envGRPCAddr = "IMSTO_GRPC_ADDR"
-
 	defaultTimeout time.Duration = time.Second * 5
 )
 
 var (
 	address = "127.0.0.1:12010"
-	client  pb.ImageSvcClient
-	conn    *grpc.ClientConn
-	once    sync.Once
-	trcr    credentials.TransportCredentials
+
+	firstAPIKey string
+	stageHost   string
+
+	client pb.ImageSvcClient
+	conn   *grpc.ClientConn
+	once   sync.Once
+	trcr   credentials.TransportCredentials
 
 	maxRetries  uint = 5
 	retryOptMax      = grpc_retry.WithMax(maxRetries)
 )
 
 func init() {
-	addr := os.Getenv(envGRPCAddr)
-	if addr != "" {
-		address = addr
-	}
+	address = os.Getenv("IMSTO_GRPC_ADDR")
+	firstAPIKey = os.Getenv("IMSTO_API_KEY")
+	stageHost = os.Getenv("IMSTO_STAGE_HOST")
+
 	caCrt := os.Getenv("IMSTO_GRPC_CA")
 	clientCrt := os.Getenv("IMSTO_GRPC_CLIENT_CRT")
 	clientKey := os.Getenv("IMSTO_GRPC_CLIENT_KEY")
@@ -52,6 +54,7 @@ func init() {
 		log.Printf("sso: using TLS %s,%s", clientCrt, clientKey)
 		trcr = loadTrCr(caCrt, clientCrt, clientKey, serverName)
 	}
+
 }
 
 func loadTrCr(caCrt, clientCrt, clientKey, serverName string) credentials.TransportCredentials {
@@ -142,15 +145,23 @@ type ImageInput = pb.ImageInput
 // ImageOutput ...
 type ImageOutput = pb.ImageOutput
 
+// MakeURL ...
+func MakeURL(path, sizeOp string) string {
+	if len(stageHost) == 0 {
+		return "/show/" + sizeOp + "/" + path
+	}
+	return "//" + stageHost + "/show/" + sizeOp + "/" + path
+}
+
 // Fetch ...
-func Fetch(ctx context.Context, apiKey, roof, uri string) (IImage, error) {
+func Fetch(ctx context.Context, roof, uri string) (IImage, error) {
 	r, err := GetClient().Fetch(ctx, &pb.FetchInput{
-		ApiKey: apiKey,
+		ApiKey: firstAPIKey,
 		Uri:    uri,
 		Roof:   roof,
 	})
 	if err != nil {
-		log.Printf("call Fetch(%s, %s) ERR %s", apiKey, uri, err)
+		log.Printf("call Fetch(%s, %s) ERR %s", firstAPIKey, uri, err)
 		return nil, err
 	}
 
@@ -158,19 +169,19 @@ func Fetch(ctx context.Context, apiKey, roof, uri string) (IImage, error) {
 }
 
 // Store ...
-func Store(ctx context.Context, apiKey, roof, name string, rd io.Reader) (IImage, error) {
+func Store(ctx context.Context, roof, name string, rd io.Reader) (IImage, error) {
 	data, err := ioutil.ReadAll(rd)
 	if err != nil {
 		return nil, err
 	}
 	r, err := GetClient().Store(ctx, &pb.ImageInput{
-		ApiKey: apiKey,
+		ApiKey: firstAPIKey,
 		Image:  data,
 		Roof:   roof,
 		Name:   name,
 	})
 	if err != nil {
-		log.Printf("call Store(%s, %d bytes) ERR %s", apiKey, len(data), err)
+		log.Printf("call Store(%s, %d bytes) ERR %s", firstAPIKey, len(data), err)
 		return nil, err
 	}
 
