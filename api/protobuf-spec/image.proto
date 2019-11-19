@@ -47,7 +47,7 @@ message ImageOutput {
 	string path = 1;
 	string uri = 2;
 	string host = 3;
-	uint64 ID = 4;
+	string ID = 4;
 	ImageMeta meta = 5;
 }
 

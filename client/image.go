@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	address = "127.0.0.1:12010"
+	address string // 127.0.0.1:8969
 
 	firstAPIKey string
 	stageHost   string
@@ -89,6 +89,12 @@ func SetAddr(addr string) {
 // GetClient ...
 func GetClient() pb.ImageSvcClient {
 	once.Do(func() {
+		if len(address) == 0 {
+			panic("empty IMSTO_GRPC_ADDR or not found in environment")
+		}
+		if len(firstAPIKey) == 0 {
+			panic("empty IMSTO_API_KEY or not found in environment")
+		}
 		hasTLS := trcr != nil
 		log.Printf("dial to %q, TLS %v, gRPC ver %s", address, hasTLS, grpc.Version)
 		retryOpt := grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond))
@@ -133,7 +139,7 @@ type IImage interface {
 	GetPath() string
 	GetHost() string
 	GetUri() string
-	GetID() uint64
+	GetID() string
 }
 
 // FetchInput ...
@@ -154,19 +160,16 @@ func MakeURL(path, sizeOp string) string {
 }
 
 // Fetch ...
-func Fetch(ctx context.Context, roof, uri string) (IImage, error) {
-	var uid int64
-	if u, ok := UIDFromContext(ctx); ok {
-		uid = u
+func Fetch(ctx context.Context, in FetchInput) (IImage, error) {
+	if in.ApiKey == "" {
+		in.ApiKey = firstAPIKey
 	}
-	r, err := GetClient().Fetch(ctx, &pb.FetchInput{
-		ApiKey: firstAPIKey,
-		Uri:    uri,
-		Roof:   roof,
-		UserID: uid,
-	})
+	if uid, ok := UIDFromContext(ctx); ok {
+		in.UserID = uid
+	}
+	r, err := GetClient().Fetch(ctx, &in)
 	if err != nil {
-		log.Printf("call Fetch(%s, %s) ERR %s", firstAPIKey, uri, err)
+		log.Printf("call Fetch(%s, %s, %s) ERR %s", in.ApiKey, in.Roof, in.Uri, err)
 		return nil, err
 	}
 
@@ -174,26 +177,31 @@ func Fetch(ctx context.Context, roof, uri string) (IImage, error) {
 }
 
 // Store ...
-func Store(ctx context.Context, roof, name string, rd io.Reader) (IImage, error) {
-	var uid int64
-	if u, ok := UIDFromContext(ctx); ok {
-		uid = u
+func Store(ctx context.Context, in *ImageInput) (IImage, error) {
+	if in.ApiKey == "" {
+		in.ApiKey = firstAPIKey
 	}
+	if uid, ok := UIDFromContext(ctx); ok {
+		in.UserID = uid
+	}
+	r, err := GetClient().Store(ctx, in)
+	if err != nil {
+		log.Printf("call Store(%s, %s, %d bytes) ERR %s", in.ApiKey, in.Roof, len(in.Image), err)
+		return nil, err
+	}
+	return r, nil
+}
+
+// StoreReader ...
+func StoreReader(ctx context.Context, roof, name string, rd io.Reader) (IImage, error) {
 	data, err := ioutil.ReadAll(rd)
 	if err != nil {
 		return nil, err
 	}
-	r, err := GetClient().Store(ctx, &pb.ImageInput{
-		ApiKey: firstAPIKey,
-		Image:  data,
-		Roof:   roof,
-		Name:   name,
-		UserID: uid,
+	return Store(ctx, &pb.ImageInput{
+		Image: data,
+		Roof:  roof,
+		Name:  name,
 	})
-	if err != nil {
-		log.Printf("call Store(%s, %d bytes) ERR %s", firstAPIKey, len(data), err)
-		return nil, err
-	}
 
-	return r, nil
 }
