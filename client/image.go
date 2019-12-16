@@ -26,11 +26,12 @@ const (
 	defaultTimeout time.Duration = time.Second * 5
 )
 
+// vars
 var (
 	address string // 127.0.0.1:8969
 
 	firstAPIKey string
-	stageHost   string
+	StageHost   string // Host of image uri, like CDN
 
 	client pb.ImageSvcClient
 	conn   *grpc.ClientConn
@@ -44,7 +45,7 @@ var (
 func init() {
 	address = os.Getenv("IMSTO_GRPC_ADDR")
 	firstAPIKey = os.Getenv("IMSTO_API_KEY")
-	stageHost = os.Getenv("IMSTO_STAGE_HOST")
+	StageHost = os.Getenv("IMSTO_STAGE_HOST")
 
 	caCrt := os.Getenv("IMSTO_GRPC_CA")
 	clientCrt := os.Getenv("IMSTO_GRPC_CLIENT_CRT")
@@ -153,10 +154,13 @@ type ImageOutput = pb.ImageOutput
 
 // MakeURL ...
 func MakeURL(path, sizeOp string) string {
-	if len(stageHost) == 0 {
+	if len(sizeOp) == 0 {
+		sizeOp = "orig"
+	}
+	if len(StageHost) == 0 {
 		return "/show/" + sizeOp + "/" + path
 	}
-	return "//" + stageHost + "/show/" + sizeOp + "/" + path
+	return "//" + StageHost + "/show/" + sizeOp + "/" + path
 }
 
 // Fetch ...
