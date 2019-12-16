@@ -1,6 +1,12 @@
 # imsto-client
 Imsto RPC Client
 
+Features
+--
+
+* `Store()` Save a image with binary data
+* `Fetch()` Get a image from a public URI
+* `MakeURL()` build a image uri
 
 About SizeOP
 ---
@@ -18,7 +24,7 @@ About SizeOP
 ### 尺寸格式
 
 * 一个数字，表示正方形，如 120
-* 两个数字中间有小写]字母`x`， 120x160
+* 两个数字中间有小写字母`x`， 120x160
 
 
 ### 示例
