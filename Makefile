@@ -5,6 +5,7 @@ build: vet
 	go build -v ./...
 
 vet:
+	echo "Checking ./..."
 	go vet ./...
 
 gen-rpc:
