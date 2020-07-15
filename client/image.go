@@ -21,6 +21,11 @@ var (
 	onceIC sync.Once
 )
 
+func init() {
+	firstAPIKey = os.Getenv("IMSTO_API_KEY")
+	StageHost = os.Getenv("IMSTO_STAGE_HOST")
+}
+
 // GetClient ...
 func GetClient() pb.ImageSvcClient {
 	onceIC.Do(func() {
