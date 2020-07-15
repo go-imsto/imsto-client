@@ -7,6 +7,7 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
+	"os"
 	"sync"
 
 	pb "github.com/go-imsto/imsto-client/impb"
