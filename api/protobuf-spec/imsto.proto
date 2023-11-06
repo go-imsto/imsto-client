@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option java_multiple_files = true;
 option java_package = "tech.fhyx.platform.imsto";
-option go_package = "impb";
+option go_package = ".;impb";
 
 package impb;
 
