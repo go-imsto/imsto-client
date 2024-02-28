@@ -1,6 +1,4 @@
-//
 // Package client imsto 客户端实现
-//
 package client
 
 import (
@@ -74,14 +72,14 @@ func MakeURL(path, sizeOp string) string {
 }
 
 // Fetch ...
-func Fetch(ctx context.Context, in FetchInput) (IImage, error) {
+func Fetch(ctx context.Context, in *FetchInput) (IImage, error) {
 	if in.ApiKey == "" {
 		in.ApiKey = firstAPIKey
 	}
 	if uid, ok := UIDFromContext(ctx); ok {
 		in.UserID = uid
 	}
-	r, err := GetClient().Fetch(ctx, &in)
+	r, err := GetClient().Fetch(ctx, in)
 	if err != nil {
 		logger().Infow("call Fetch() fail", "apiKey", in.ApiKey, "roof", in.Roof, "uri", in.Uri, "err", err)
 		return nil, err
