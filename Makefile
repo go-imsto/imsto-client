@@ -2,11 +2,11 @@
 .PHONY : build gen-rpc vet
 
 build: vet
-	go build -v ./...
+	GO111MODULE=auto go build -v ./...
 
 vet:
 	echo "Checking ./..."
-	go vet ./...
+	GO111MODULE=auto go vet ./...
 
 gen-rpc:
 	echo "Generating"
