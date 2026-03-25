@@ -1,10 +1,8 @@
 package client
 
 import (
-	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
 	"os"
 	"sync"
 
@@ -12,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -49,7 +48,7 @@ func loadTrCr(caCrt, clientCrt, clientKey, serverName string) credentials.Transp
 	}
 
 	certPool := x509.NewCertPool()
-	ca, err := ioutil.ReadFile(caCrt)
+	ca, err := os.ReadFile(caCrt)
 	if err != nil {
 		logger().Fatalw("ioutil.ReadFile fail", "err", err)
 	}
@@ -99,12 +98,10 @@ func newClientConn() (*grpc.ClientConn, error) {
 	if hasTLS {
 		opts = append(opts, grpc.WithTransportCredentials(trcr))
 	} else {
-		opts = append(opts, grpc.WithInsecure())
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancel()
-	conn, err := grpc.DialContext(ctx, address, opts...)
+	conn, err := grpc.NewClient(address, opts...)
 	if err != nil {
 		return nil, err
 	}

@@ -4,7 +4,6 @@ package client
 import (
 	"context"
 	"io"
-	"io/ioutil"
 	"os"
 	"sync"
 
@@ -106,7 +105,7 @@ func Store(ctx context.Context, in *ImageInput) (IImage, error) {
 
 // StoreReader ...
 func StoreReader(ctx context.Context, roof, name string, rd io.Reader) (IImage, error) {
-	data, err := ioutil.ReadAll(rd)
+	data, err := io.ReadAll(rd)
 	if err != nil {
 		return nil, err
 	}

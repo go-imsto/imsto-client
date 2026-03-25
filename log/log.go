@@ -26,19 +26,19 @@ func Get() Logger {
 }
 
 func (z *logger) Debugw(msg string, keysAndValues ...interface{}) {
-	syslog.Output(2, fmt.Sprint("DEBUG: "+msg, keysAndValues))
+	_ = syslog.Output(2, fmt.Sprint("DEBUG: "+msg, keysAndValues))
 }
 
 func (z *logger) Infow(msg string, keysAndValues ...interface{}) {
-	syslog.Output(2, fmt.Sprint("INFO: "+msg, keysAndValues))
+	_ = syslog.Output(2, fmt.Sprint("INFO: "+msg, keysAndValues))
 }
 
 func (z *logger) Warnw(msg string, keysAndValues ...interface{}) {
-	syslog.Output(2, fmt.Sprint("WARN: "+msg, keysAndValues))
+	_ = syslog.Output(2, fmt.Sprint("WARN: "+msg, keysAndValues))
 }
 
 func (z *logger) Errorw(msg string, keysAndValues ...interface{}) {
-	syslog.Output(2, fmt.Sprint("ERROR: "+msg, keysAndValues))
+	_ = syslog.Output(2, fmt.Sprint("ERROR: "+msg, keysAndValues))
 }
 
 func (z *logger) Fatalw(msg string, keysAndValues ...interface{}) {
