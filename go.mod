@@ -3,7 +3,6 @@ module github.com/go-imsto/imsto-client
 go 1.25.0
 
 require (
-	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	google.golang.org/grpc v1.79.3
 	google.golang.org/protobuf v1.36.11
 )

@@ -5,7 +5,6 @@ import (
 	"context"
 	"io"
 	"os"
-	"sync"
 
 	pb "github.com/go-imsto/imsto-client/impb"
 )
@@ -14,9 +13,6 @@ import (
 var (
 	firstAPIKey string
 	StageHost   string // Host of image uri, like CDN
-
-	client pb.ImageSvcClient
-	onceIC sync.Once
 )
 
 func init() {
@@ -26,10 +22,7 @@ func init() {
 
 // GetClient ...
 func GetClient() pb.ImageSvcClient {
-	onceIC.Do(func() {
-		client = pb.NewImageSvcClient(defaultConn())
-	})
-
+	defaultConn()
 	return client
 }
 

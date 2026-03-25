@@ -3,10 +3,11 @@ package client
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"os"
 	"sync"
 
-	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	pb "github.com/go-imsto/imsto-client/impb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/backoff"
 	"google.golang.org/grpc/credentials"
@@ -16,10 +17,26 @@ import (
 var (
 	address = defaultAddr
 	conn    *grpc.ClientConn
+	client  pb.ImageSvcClient
 	onceCC  sync.Once
-
-	retryOptMax = grpc_retry.WithMax(maxRetries)
 )
+
+// retryPolicy is the gRPC built-in retry policy configured via service config.
+// MaxAttempts: maximum number of retry attempts before failing.
+// InitialBackoff/MaxBackoff/BackoffMultiplier: exponential backoff configuration.
+// RetryableStatusCodes: status codes that trigger retry (UNAVAILABLE in this case).
+var retryPolicy = fmt.Sprintf(`{
+"methodConfig":[{
+  "name": [{}],
+  "retryPolicy": {
+    "MaxAttempts": %d,
+    "InitialBackoff": "%s",
+    "MaxBackoff": "%s",
+    "BackoffMultiplier": 1.0,
+    "RetryableStatusCodes": ["UNAVAILABLE"]
+  }
+}]
+}`, maxRetries, backoffRetryBase, backoffMaxDelay)
 
 func init() {
 	addr := os.Getenv(envAddr)
@@ -36,6 +53,7 @@ func defaultConn() *grpc.ClientConn {
 		if err != nil {
 			logger().Fatalw("get client conn fail", "err", err)
 		}
+		client = pb.NewImageSvcClient(conn)
 		logger().Infow("connection", "state", conn.GetState())
 	})
 	return conn
@@ -85,15 +103,12 @@ func newClientConn() (*grpc.ClientConn, error) {
 
 	hasTLS := trcr != nil
 	logger().Infow("grpc: dial", "addr", address, "tls", hasTLS, "ver", grpc.Version)
-	retryOpt := grpc_retry.WithBackoff(grpc_retry.BackoffExponential(backoffRetryBase))
-	var retryOpts = []grpc_retry.CallOption{retryOpt, retryOptMax}
 
 	bc := backoff.DefaultConfig
 	bc.MaxDelay = backoffMaxDelay
 	opts := []grpc.DialOption{
 		grpc.WithConnectParams(grpc.ConnectParams{Backoff: bc}),
-		grpc.WithStreamInterceptor(grpc_retry.StreamClientInterceptor(retryOpts...)),
-		grpc.WithUnaryInterceptor(grpc_retry.UnaryClientInterceptor(retryOpts...)),
+		grpc.WithDefaultServiceConfig(retryPolicy),
 	}
 	if hasTLS {
 		opts = append(opts, grpc.WithTransportCredentials(trcr))
